@@ -30,6 +30,21 @@ public extension Data {
 	public func string(encoding: String.Encoding) -> String? {
 		return String(data: self, encoding: encoding)
 	}
+    
+    public func jsonDecoded<T: Decodable>(usingKeyDecodingStrategy keyDecodingStrategy: JSONDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> T {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = keyDecodingStrategy
+        return try decoder.decode(T.self, from: self)
+    }
+    
+    public func plistDecoded<T: Decodable>(usingFormat format: inout PropertyListSerialization.PropertyListFormat) throws -> T {
+        let decoder = PropertyListDecoder()
+        return try decoder.decode(T.self, from: self, format: &format)
+    }
+    
+    public func plistDecoded<T: Decodable>() throws -> T {
+        return try PropertyListDecoder().decode(T.self, from: self)
+    }
 
 }
 #endif
