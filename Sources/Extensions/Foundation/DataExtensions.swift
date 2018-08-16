@@ -30,21 +30,33 @@ public extension Data {
 	public func string(encoding: String.Encoding) -> String? {
 		return String(data: self, encoding: encoding)
 	}
-    
-    public func jsonDecoded<T: Decodable>(usingKeyDecodingStrategy keyDecodingStrategy: JSONDecoder.KeyDecodingStrategy = .useDefaultKeys) throws -> T {
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = keyDecodingStrategy
-        return try decoder.decode(T.self, from: self)
-    }
-    
-    public func plistDecoded<T: Decodable>(usingFormat format: inout PropertyListSerialization.PropertyListFormat) throws -> T {
-        let decoder = PropertyListDecoder()
-        return try decoder.decode(T.self, from: self, format: &format)
-    }
-    
-    public func plistDecoded<T: Decodable>() throws -> T {
-        return try PropertyListDecoder().decode(T.self, from: self)
-    }
 
+    /// SwifterSwift: Decodes the data and returns a value of the specified type or
+    /// the inferred type if possible. Throws [dataCorrupted](apple-reference-documentation://hs96_0iudB)
+    /// if value fails to decode.
+    ///
+    ///     // Explicit type
+    ///     let user = userData.decoded() as User
+    ///
+    ///     // Inferred type
+    ///     userDidLoad(userData.decoded())
+    ///
+    /// - Parameter decoder: The object used to decode the data. Default is `JSONDecoder`.
+    /// - Returns: A value of the specified type (or inferred type, if possible).
+    /// - Throws: [dataCorrupted](apple-reference-documentation://hs96_0iudB) if value fails to decode
+    public func decoded<D: Decodable>(using decoder: AnyDecoder = JSONDecoder()) throws -> D {
+        // Source: https://www.swiftbysundell.com/posts/type-inference-powered-serialization-in-swift
+        return try decoder.decode(D.self, from: self)
+    }
 }
+
+// MARK: - Protocols
+public protocol AnyDecoder {
+    func decode<D: Decodable>(_ type: D.Type, from data: Data) throws -> D
+}
+
+// MARK: - Protocol Conformance
+extension JSONDecoder: AnyDecoder {}
+extension PropertyListDecoder: AnyDecoder {}
+
 #endif
